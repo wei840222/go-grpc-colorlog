@@ -25,6 +25,7 @@ const (
 
 type logPayload struct {
 	startTime     time.Time
+	callType      string
 	fullMethod    string
 	statusCode    codes.Code
 	err           error
@@ -49,22 +50,34 @@ func (l logPayload) statusCodeColor() string {
 	}
 }
 
+func (l logPayload) callTypeColor() string {
+	switch l.callType {
+	case "unary":
+		return blue
+	case "streaming":
+		return cyan
+	default:
+		return reset
+	}
+}
+
 func (l logPayload) print() {
-	var statusColor, methodColor, resetColor string
+	var statusColor, callTypeColor, resetColor string
 	if l.isOutputColor {
 		statusColor = l.statusCodeColor()
-		methodColor = blue
+		callTypeColor = l.callTypeColor()
 		resetColor = reset
 	}
 	var errMsg string
 	if l.err != nil {
-		errMsg = l.err.Error()
+		errMsg = "\nError: " + l.err.Error()
 	}
-	fmt.Printf("[gRPC-Go] %v |%s %19s %s| %13v |%s %s %s\n%s",
+	fmt.Printf("[gRPC-Go] %v |%s %18s %s| %13v |%s %-9s %s %s%s\n",
 		l.startTime.Format("2006/01/02 - 15:04:05"),
 		statusColor, l.statusCode.String(), resetColor,
 		time.Since(l.startTime),
-		methodColor, l.fullMethod, resetColor,
+		callTypeColor, l.callType, resetColor,
+		l.fullMethod,
 		errMsg,
 	)
 }
@@ -75,6 +88,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		l := logPayload{
 			startTime:     time.Now(),
+			callType:      "unary",
 			fullMethod:    info.FullMethod,
 			isOutputColor: isTerm,
 		}
@@ -91,6 +105,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		l := logPayload{
 			startTime:     time.Now(),
+			callType:      "streaming",
 			fullMethod:    info.FullMethod,
 			isOutputColor: isTerm,
 		}
