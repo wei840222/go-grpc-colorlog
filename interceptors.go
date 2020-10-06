@@ -60,7 +60,7 @@ func (l logPayload) print() {
 	if l.err != nil {
 		errMsg = l.err.Error()
 	}
-	fmt.Printf("[gRPC-Go] %v |%s %19s %s| %13v | %s %-7s %s\n%s",
+	fmt.Printf("[gRPC-Go] %v |%s %19s %s| %13v |%s %s %s\n%s",
 		l.startTime.Format("2006/01/02 - 15:04:05"),
 		statusColor, l.statusCode.String(), resetColor,
 		time.Since(l.startTime),
