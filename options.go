@@ -9,10 +9,11 @@ import (
 )
 
 type options struct {
-	output        io.Writer
-	isOutputColor bool
-	shouldLog     grpc_logging.Decider
-	codeFunc      grpc_logging.ErrorToCode
+	output             io.Writer
+	isOutputColor      bool
+	isForceOutputColor bool
+	shouldLog          grpc_logging.Decider
+	codeFunc           grpc_logging.ErrorToCode
 }
 
 var defaultOptions = &options{
@@ -31,6 +32,9 @@ func evaluateOpt(opts []Option) *options {
 	if w, ok := optCopy.output.(*os.File); !ok || (!isatty.IsTerminal(w.Fd()) && !isatty.IsCygwinTerminal(w.Fd())) {
 		optCopy.isOutputColor = false
 	}
+	if optCopy.isForceOutputColor {
+		optCopy.isOutputColor = true
+	}
 	return optCopy
 }
 
@@ -48,5 +52,12 @@ func WithDecider(f grpc_logging.Decider) Option {
 func WithErrorToCode(f grpc_logging.ErrorToCode) Option {
 	return func(o *options) {
 		o.codeFunc = f
+	}
+}
+
+// WithForceOutputColor customizes the function for force enable output color.
+func WithForceOutputColor(b bool) Option {
+	return func(o *options) {
+		o.isForceOutputColor = b
 	}
 }
