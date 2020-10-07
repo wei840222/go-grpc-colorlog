@@ -102,7 +102,7 @@ func StreamServerInterceptor(opts ...Option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		l := logPayload{
 			startTime:  time.Now(),
-			callType:   callTypeUnary,
+			callType:   callTypeStreaming,
 			fullMethod: info.FullMethod,
 		}
 		err := handler(srv, ss)
